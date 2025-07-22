@@ -1,31 +1,23 @@
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-from proxy_pool.premium_proxy import get_kuaidaili_proxy
+from bs4 import BeautifulSoup
+from app import make_request
 
 def crawl_dangdang_price(book_name):
+    url = f"http://search.dangdang.com/?key={book_name}&act=input"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+    response = make_request(url, headers=headers)
+    if response is None:
+        return "当当价格获取失败"
+
+    soup = BeautifulSoup(response.text, "lxml")
     try:
-        url = f"https://search.dangdang.com/?key={book_name}&act=input"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
-        proxies = get_kuaidaili_proxy()
-
-        session = requests.Session()
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET"]
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-
-        response = session.get(url, headers=headers, proxies=proxies, timeout=15)
-        if response.status_code == 200:
-            return "当当价格获取成功（示例）"
+        # 当当价格一般在 <p class="price"><span>价格</span></p>
+        price_span = soup.select_one('p.price span')
+        if price_span:
+            price = price_span.get_text(strip=True)
+            return price
         else:
-            return f"状态码异常：{response.status_code}"
+            return "当当价格未找到"
     except Exception as e:
-        return f"请求失败：{e}"
+        return f"解析失败: {e}"
