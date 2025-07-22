@@ -6,22 +6,34 @@ import os
 
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    return "欢迎使用图书价格查询接口，请访问 /api/price 发送 POST 请求"
+
 @app.route('/api/price', methods=['POST'])
 def get_price():
     data = request.get_json()
-    book_name = data.get("book_name")
-    if not book_name:
-        return jsonify({"error": "书名不能为空"}), 400
 
-    prices = {
-        "淘宝": crawl_taobao_price(book_name),
-        "京东": crawl_jd_price(book_name),
-        "当当": crawl_dangdang_price(book_name),
-    }
+    # 如果是数组，取第一个元素
+    if isinstance(data, list):
+        if not data:
+            return jsonify({"error": "请求体数组为空"}), 400
+        data = data[0]
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "请求体格式错误，期望对象或数组"}), 400
+
+    book_name = data.get('book_name')
+    if not book_name:
+        return jsonify({"error": "缺少书名参数"}), 400
 
     return jsonify({
         "book_name": book_name,
-        "prices": prices
+        "prices": {
+            "淘宝": crawl_taobao_price(book_name),
+            "京东": crawl_jd_price(book_name),
+            "当当": crawl_dangdang_price(book_name)
+        }
     })
 
 if __name__ == '__main__':
