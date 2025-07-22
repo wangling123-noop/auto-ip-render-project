@@ -2,9 +2,33 @@ from flask import Flask, request, jsonify
 from spiders.taobao_spider import crawl_taobao_price
 from spiders.jd_spider import crawl_jd_price
 from spiders.dangdang_spider import crawl_dangdang_price
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import os
 
 app = Flask(__name__)
+
+# 通用请求函数：用于爬虫内部统一调用
+def make_request(url, headers=None, params=None, timeout=30):
+    session = requests.Session()
+    retries = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods=["GET", "POST"]
+    )
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    try:
+        response = session.get(url, headers=headers, params=params, timeout=timeout)
+        response.raise_for_status()
+        return response
+    except Exception as e:
+        print(f"❌ 请求失败: {url}\n原因: {e}")
+        return None
 
 @app.route('/')
 def index():
