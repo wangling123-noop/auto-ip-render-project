@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from app import make_request
+from utils.request_utils import make_request
 
 def crawl_dangdang_price(book_name):
     url = f"http://search.dangdang.com/?key={book_name}&act=input"
