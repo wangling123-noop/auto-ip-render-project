@@ -17,41 +17,39 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
 ]
 
-def get_edge_driver_with_proxy_and_ua():
+def get_driver():
     options = Options()
     options.use_chromium = True
-    options.add_argument("--headless")
+    options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
     ua = random.choice(USER_AGENTS)
-    options.add_argument(f'user-agent={ua}')
+    options.add_argument(f"user-agent={ua}")
 
-    proxy_str = f"http://{username}:{password}@{tunnel}"
-    options.add_argument(f'--proxy-server={proxy_str}')
+    proxy = f"http://{username}:{password}@{tunnel}"
+    options.add_argument(f"--proxy-server={proxy}")
 
-    driver = webdriver.Edge(options=options)
-    return driver
+    return webdriver.Edge(options=options)
 
 def crawl_dangdang_price(keyword):
     url = f"http://search.dangdang.com/?key={keyword}&act=input"
-    driver = get_edge_driver_with_proxy_and_ua()
+    driver = get_driver()
     try:
         driver.get(url)
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, 'p.price span'))
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".bigimg .price"))
         )
-        html = driver.page_source
-        soup = BeautifulSoup(html, "lxml")
-        price_span = soup.select_one('p.price span')
-        if price_span:
-            time.sleep(random.uniform(1, 3))
-            return price_span.get_text(strip=True)
+
+        soup = BeautifulSoup(driver.page_source, "lxml")
+        price_tag = soup.select_one(".bigimg .price")
+        if price_tag:
+            return f"{price_tag.text.strip()} 元"
         else:
             return "当当价格未找到"
     except Exception as e:
-        error_msg = traceback.format_exc()
-        return f"解析失败: {e}\n{error_msg}"
+        return f"❌ 解析失败: {str(e)}\n{traceback.format_exc()}"
     finally:
         driver.quit()
 
