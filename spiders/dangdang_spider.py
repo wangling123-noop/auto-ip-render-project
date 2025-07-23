@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 import random
 import traceback
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 username = "t15324050834262"
 password = "6f2j0zgs"
@@ -39,23 +42,27 @@ def crawl_dangdang_price(keyword):
     try:
         driver.set_page_load_timeout(20)
         driver.get(url)
-
         WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".bigimg .price"))
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".bigimg .line1"))
         )
-
         html = driver.page_source
         soup = BeautifulSoup(html, "lxml")
-
-        price_span = soup.select_one(".bigimg .price")
+        price_span = soup.select_one(".bigimg .line1 .search_now_price")
         if price_span:
             price = price_span.get_text(strip=True)
             time.sleep(random.uniform(1.2, 2.5))
             return f"{price} 元"
         else:
             return "当当价格未找到"
-
     except Exception as e:
-        return f" 解析失败: {str(e)}\n{traceback.format_exc()}"
+        return f"❌ 解析失败: {str(e)}\n{traceback.format_exc()}"
     finally:
         driver.quit()
+
+if __name__ == "__main__":
+    book = "python编程"
+    result = crawl_dangdang_price(book)
+    try:
+        print(f"✅ 当当价格: {result}")
+    except UnicodeEncodeError:
+        print("当当价格:", result.encode("utf-8", errors="replace").decode("utf-8"))

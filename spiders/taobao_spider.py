@@ -8,20 +8,28 @@ from bs4 import BeautifulSoup
 import random
 import traceback
 import time
+import logging
 
-# 代理和驱动路径配置
+# 启用日志（可选）
+logging.basicConfig(level=logging.INFO)
+
+# 代理配置（如不需要代理可以注释相关行）
 username = "t15324050834262"
 password = "6f2j0zgs"
 tunnel = "j197.kdltpspro.com:15818"
+
+# ✅ EdgeDriver 路径（已确认版本正确）
 driver_path = r"D:\2025723\edgedriver_win64\msedgedriver.exe"
 
+# User-Agent 池
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
 ]
 
 def get_driver():
-    service = Service(executable_path=driver_path)  # 这里每次调用都创建新的Service对象
+    # ✅ 显式创建 EdgeDriver 服务对象
+    service = Service(executable_path=driver_path)
 
     options = Options()
     options.use_chromium = True
@@ -30,12 +38,15 @@ def get_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-blink-features=AutomationControlled")
 
+    # 添加随机 User-Agent
     ua = random.choice(USER_AGENTS)
     options.add_argument(f"user-agent={ua}")
 
+    # ✅ 使用代理（如不需要代理，可注释下一行）
     proxy_str = f"http://{username}:{password}@{tunnel}"
     options.add_argument(f"--proxy-server={proxy_str}")
 
+    # ✅ 显式传入 service 和 options（关键）
     return webdriver.Edge(service=service, options=options)
 
 def crawl_taobao_price(keyword):
@@ -61,10 +72,14 @@ def crawl_taobao_price(keyword):
             return "淘宝价格未找到"
 
     except Exception as e:
-        return f" 解析失败: {str(e)}\n{traceback.format_exc()}"
+        return f"❌ 解析失败: {str(e)}\n{traceback.format_exc()}"
     finally:
         driver.quit()
 
 if __name__ == "__main__":
     book = "python编程"
-    print(f"淘宝价格: {crawl_taobao_price(book)}")
+    result = crawl_taobao_price(book)
+    try:
+        print(f"✅ 淘宝价格: {result}")
+    except UnicodeEncodeError:
+        print("淘宝价格:", result.encode("utf-8", errors="replace").decode("utf-8"))
