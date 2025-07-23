@@ -27,7 +27,7 @@ def make_request(
     data=None,
     method="GET",
     timeout=30,
-    proxies=None,
+    proxies=proxies,
     verify=True,
     debug=False
 ):
