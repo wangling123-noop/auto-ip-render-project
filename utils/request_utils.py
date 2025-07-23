@@ -3,7 +3,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import time
 
-# 你的快代理隧道账号配置
+# 快代理隧道账号配置，修改成你的
 username = "t15324050834262"
 password = "6f2j0zgs"
 tunnel = "j197.kdltpspro.com:15818"
@@ -24,9 +24,7 @@ def make_request(
     verify=True,
     debug=False
 ):
-    # **每次请求都新建session，防止复用连接导致隧道IP不变**
     session = requests.Session()
-
     retries = Retry(
         total=3,
         backoff_factor=1,
@@ -85,16 +83,6 @@ def make_request(
         print(f"🔥 其他异常: {e}")
 
     finally:
-        # 关闭session，断开连接，触发隧道IP切换
         session.close()
 
     return None
-
-
-if __name__ == "__main__":
-    test_url = "http://httpbin.org/ip"
-    for i in range(5):
-        resp = make_request(test_url, proxies=proxies, debug=True)
-        if resp:
-            print(f"第{i+1}次请求返回IP: {resp.text.strip()}")
-        time.sleep(5)  # 休息几秒，保证断开连接，触发换IP
