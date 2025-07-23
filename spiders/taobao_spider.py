@@ -61,7 +61,7 @@ def crawl_taobao_price(keyword):
             return "淘宝价格未找到"
 
     except Exception as e:
-        return f"❌ 解析失败: {str(e)}\n{traceback.format_exc()}"
+        return f" 解析失败: {str(e)}\n{traceback.format_exc()}"
     finally:
         driver.quit()
 

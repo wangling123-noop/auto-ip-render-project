@@ -56,6 +56,6 @@ def crawl_dangdang_price(keyword):
             return "当当价格未找到"
 
     except Exception as e:
-        return f"❌ 解析失败: {str(e)}\n{traceback.format_exc()}"
+        return f" 解析失败: {str(e)}\n{traceback.format_exc()}"
     finally:
         driver.quit()
