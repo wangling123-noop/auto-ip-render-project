@@ -1,6 +1,6 @@
 def get_kuaidaili_proxy():
-    username = "t15318226940336"
-    password = "xwalb2ql"
+    username = "t15324050834262"
+    password = "6f2j0zgs"
     proxy_host = "z579.kdltps.com"
     proxy_port = "15818"
 
