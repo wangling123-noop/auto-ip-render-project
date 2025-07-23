@@ -3,6 +3,7 @@ from spiders.taobao_spider import crawl_taobao_price
 from spiders.jd_spider import crawl_jd_price
 from spiders.dangdang_spider import crawl_dangdang_price
 import os
+import concurrent.futures
 
 app = Flask(__name__)
 
@@ -12,9 +13,11 @@ def index():
 
 @app.route('/api/price', methods=['POST'])
 def get_price():
+    if not request.is_json:
+        return jsonify({"error": "请求体必须是 JSON 格式"}), 400
+
     data = request.get_json()
 
-    # 如果是数组，取第一个元素
     if isinstance(data, list):
         if not data:
             return jsonify({"error": "请求体数组为空"}), 400
@@ -27,13 +30,29 @@ def get_price():
     if not book_name:
         return jsonify({"error": "缺少书名参数"}), 400
 
+    def safe_crawl(func, name):
+        try:
+            result = func(book_name)
+            if result is None:
+                return f"{name}价格获取失败"
+            return result
+        except Exception as e:
+            return f"{name}价格获取异常: {str(e)}"
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_taobao = executor.submit(safe_crawl, crawl_taobao_price, "淘宝")
+        future_jd = executor.submit(safe_crawl, crawl_jd_price, "京东")
+        future_dd = executor.submit(safe_crawl, crawl_dangdang_price, "当当")
+
+        prices = {
+            "淘宝": future_taobao.result(),
+            "京东": future_jd.result(),
+            "当当": future_dd.result()
+        }
+
     return jsonify({
         "book_name": book_name,
-        "prices": {
-            "淘宝": crawl_taobao_price(book_name),
-            "京东": crawl_jd_price(book_name),
-            "当当": crawl_dangdang_price(book_name)
-        }
+        "prices": prices
     })
 
 if __name__ == '__main__':

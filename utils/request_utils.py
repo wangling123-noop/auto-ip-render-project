@@ -3,8 +3,9 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-def make_request(url, headers=None, params=None, timeout=30):
+def make_request(url, headers=None, params=None, timeout=30, proxies=None):
     session = requests.Session()
+
     retries = Retry(
         total=3,
         backoff_factor=1,
@@ -14,6 +15,9 @@ def make_request(url, headers=None, params=None, timeout=30):
     adapter = HTTPAdapter(max_retries=retries)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
+
+    if proxies:
+        session.proxies.update(proxies)
 
     try:
         response = session.get(url, headers=headers, params=params, timeout=timeout)
