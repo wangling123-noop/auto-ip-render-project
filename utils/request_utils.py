@@ -1,6 +1,7 @@
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import time
 
 def make_request(
     url,
@@ -19,13 +20,13 @@ def make_request(
         total=3,
         backoff_factor=1,
         status_forcelist=[500, 502, 503, 504],
-        allowed_methods=["GET", "POST"]
+        allowed_methods=["GET", "POST"],
+        raise_on_status=False
     )
     adapter = HTTPAdapter(max_retries=retries)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
 
-    # 默认 User-Agent，如果 headers 没有提供
     if headers is None:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0 Safari/537.36"
@@ -33,33 +34,43 @@ def make_request(
 
     try:
         if debug:
-            print(f"🚀 发起请求: {url}")
-            if proxies:
-                print(f"🕵️ 使用代理: {proxies}")
+            print(f"🚀 请求地址: {url}")
             print(f"📨 请求方式: {method}")
+            print(f"🕵️ 代理设置: {proxies if proxies else '未使用'}")
+
+        start_time = time.time()
 
         if method.upper() == "GET":
-            response = session.get(url, headers=headers, params=params, timeout=timeout, proxies=proxies, verify=verify)
+            response = session.get(
+                url, headers=headers, params=params,
+                timeout=timeout, proxies=proxies, verify=verify
+            )
         elif method.upper() == "POST":
-            response = session.post(url, headers=headers, params=params, data=data, timeout=timeout, proxies=proxies, verify=verify)
+            response = session.post(
+                url, headers=headers, params=params, data=data,
+                timeout=timeout, proxies=proxies, verify=verify
+            )
         else:
-            raise ValueError(f"不支持的请求方法: {method}")
+            raise ValueError(f"❌ 不支持的请求方法: {method}")
 
+        elapsed = round(time.time() - start_time, 2)
         response.raise_for_status()
 
         if debug:
-            print(f"✅ 请求成功，状态码: {response.status_code}")
-            print(f"📡 响应内容(前200字): {response.text[:200]}")
+            print(f"✅ 请求成功 | 状态码: {response.status_code} | 耗时: {elapsed}s")
+            print(f"📡 响应前200字: {response.text[:200]}")
 
         return response
 
     except requests.exceptions.ProxyError as e:
         print(f"❌ 代理连接失败: {e}")
     except requests.exceptions.Timeout as e:
-        print(f"❌ 请求超时: {e}")
+        print(f"⏰ 请求超时: {e}")
     except requests.exceptions.HTTPError as e:
-        print(f"❌ HTTP错误: {e}")
+        print(f"⚠️ HTTP错误: {e} | 状态码: {getattr(e.response, 'status_code', '未知')}")
+    except requests.exceptions.RequestException as e:
+        print(f"🚫 请求异常: {e}")
     except Exception as e:
-        print(f"❌ 请求失败: {url}\n原因: {e}")
+        print(f"🔥 其他异常: {e}")
 
     return None
