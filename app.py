@@ -30,25 +30,26 @@ def get_price():
     if not book_name:
         return jsonify({"error": "缺少书名参数"}), 400
 
-    def safe_crawl(func, name):
+    def safe_crawl(func_name):
+        func, name = func_name
         try:
             result = func(book_name)
             if result is None:
-                return f"{name}价格获取失败"
-            return result
+                return (name, f"{name}价格获取失败")
+            return (name, result)
         except Exception as e:
-            return f"{name}价格获取异常: {str(e)}"
+            return (name, f"{name}价格获取异常: {str(e)}")
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_taobao = executor.submit(safe_crawl, crawl_taobao_price, "淘宝")
-        future_jd = executor.submit(safe_crawl, crawl_jd_price, "京东")
-        future_dd = executor.submit(safe_crawl, crawl_dangdang_price, "当当")
+    funcs = [
+        (crawl_taobao_price, "淘宝"),
+        (crawl_jd_price, "京东"),
+        (crawl_dangdang_price, "当当")
+    ]
 
-        prices = {
-            "淘宝": future_taobao.result(),
-            "京东": future_jd.result(),
-            "当当": future_dd.result()
-        }
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(safe_crawl, funcs)
+
+    prices = {name: res for name, res in results}
 
     return jsonify({
         "book_name": book_name,

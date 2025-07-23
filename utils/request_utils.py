@@ -2,8 +2,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import time
+import random
 
-# 快代理隧道账号配置，修改成你的
 username = "t15324050834262"
 password = "6f2j0zgs"
 tunnel = "j197.kdltpspro.com:15818"
@@ -12,6 +12,13 @@ proxies = {
     "http": f"http://{username}:{password}@{tunnel}/",
     "https": f"http://{username}:{password}@{tunnel}/"
 }
+
+USER_AGENTS = [
+    # 这里添加多个User-Agent，示例：
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15",
+    # 继续添加更多
+]
 
 def make_request(
     url,
@@ -29,17 +36,15 @@ def make_request(
         total=3,
         backoff_factor=1,
         status_forcelist=[500, 502, 503, 504],
-        allowed_methods=["GET", "POST"],
-        raise_on_status=False
+        allowed_methods={"GET", "POST"},
+        raise_on_status=True
     )
     adapter = HTTPAdapter(max_retries=retries)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
 
     if headers is None:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0 Safari/537.36"
-        }
+        headers = {"User-Agent": random.choice(USER_AGENTS)}
 
     try:
         if debug:
