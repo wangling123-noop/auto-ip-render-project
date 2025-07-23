@@ -14,7 +14,6 @@ username = "t15324050834262"
 password = "6f2j0zgs"
 tunnel = "j197.kdltpspro.com:15818"
 driver_path = r"C:\Users\王铸林\Desktop\edgedriver_win64\msedgedriver.exe"
-service = Service(executable_path=driver_path)
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
@@ -22,6 +21,8 @@ USER_AGENTS = [
 ]
 
 def get_driver():
+    service = Service(executable_path=driver_path)  # 这里每次调用都创建新的Service对象
+
     options = Options()
     options.use_chromium = True
     options.add_argument("--headless=new")
@@ -32,6 +33,8 @@ def get_driver():
     ua = random.choice(USER_AGENTS)
     options.add_argument(f"user-agent={ua}")
 
+    proxy_str = f"http://{username}:{password}@{tunnel}"
+    options.add_argument(f"--proxy-server={proxy_str}")
 
     return webdriver.Edge(service=service, options=options)
 
