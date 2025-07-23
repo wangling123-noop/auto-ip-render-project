@@ -5,14 +5,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import random
+import traceback
+import time
 
 username = "t15324050834262"
 password = "6f2j0zgs"
 tunnel = "j197.kdltpspro.com:15818"
 
 USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
 ]
 
 def get_edge_driver_with_proxy_and_ua():
@@ -37,17 +39,19 @@ def crawl_jd_price(keyword):
     try:
         driver.get(url)
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, '.p-price i'))
+            EC.visibility_of_element_located((By.CSS_SELECTOR, '.p-price span'))
         )
         html = driver.page_source
         soup = BeautifulSoup(html, "lxml")
-        price_i = soup.select_one('.p-price i')
-        if price_i:
-            return price_i.get_text(strip=True)
+        price_span = soup.select_one('.p-price span')
+        if price_span:
+            time.sleep(random.uniform(1, 3))
+            return price_span.get_text(strip=True)
         else:
             return "京东价格未找到"
     except Exception as e:
-        return f"解析失败: {e}"
+        error_msg = traceback.format_exc()
+        return f"解析失败: {e}\n{error_msg}"
     finally:
         driver.quit()
 

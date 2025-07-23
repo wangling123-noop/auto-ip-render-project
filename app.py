@@ -4,8 +4,10 @@ from spiders.jd_spider import crawl_jd_price
 from spiders.dangdang_spider import crawl_dangdang_price
 import os
 import concurrent.futures
+import logging
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 def index():
@@ -18,27 +20,26 @@ def get_price():
 
     data = request.get_json()
 
+    # 支持批量查询
     if isinstance(data, list):
         if not data:
             return jsonify({"error": "请求体数组为空"}), 400
-        data = data[0]
+        results = []
+        for item in data:
+            res = process_single_query(item)
+            results.append(res)
+        return jsonify(results)
 
-    if not isinstance(data, dict):
+    elif isinstance(data, dict):
+        return jsonify(process_single_query(data))
+
+    else:
         return jsonify({"error": "请求体格式错误，期望对象或数组"}), 400
 
+def process_single_query(data):
     book_name = data.get('book_name')
-    if not book_name:
-        return jsonify({"error": "缺少书名参数"}), 400
-
-    def safe_crawl(func_name):
-        func, name = func_name
-        try:
-            result = func(book_name)
-            if result is None:
-                return (name, f"{name}价格获取失败")
-            return (name, result)
-        except Exception as e:
-            return (name, f"{name}价格获取异常: {str(e)}")
+    if not book_name or not isinstance(book_name, str):
+        return {"error": "缺少或无效的书名参数"}
 
     funcs = [
         (crawl_taobao_price, "淘宝"),
@@ -46,15 +47,22 @@ def get_price():
         (crawl_dangdang_price, "当当")
     ]
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(safe_crawl, funcs)
+    def safe_crawl(func_tuple):
+        func, name = func_tuple
+        try:
+            result = func(book_name)
+            if result is None:
+                return (name, f"{name}价格获取失败")
+            return (name, result)
+        except Exception as e:
+            logging.error(f"{name} 爬取异常: {e}")
+            return (name, f"{name}价格获取异常: {str(e)}")
 
-    prices = {name: res for name, res in results}
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        crawl_results = executor.map(safe_crawl, funcs)
 
-    return jsonify({
-        "book_name": book_name,
-        "prices": prices
-    })
+    prices = {name: res for name, res in crawl_results}
+    return {"book_name": book_name, "prices": prices}
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
