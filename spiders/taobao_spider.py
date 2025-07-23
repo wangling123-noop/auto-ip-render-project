@@ -32,8 +32,6 @@ def get_driver():
     ua = random.choice(USER_AGENTS)
     options.add_argument(f"user-agent={ua}")
 
-    proxy_str = f"http://{username}:{password}@{tunnel}"
-    options.add_argument(f"--proxy-server={proxy_str}")
 
     return webdriver.Edge(service=service, options=options)
 
