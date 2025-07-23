@@ -13,7 +13,7 @@ import time
 username = "t15324050834262"
 password = "6f2j0zgs"
 tunnel = "j197.kdltpspro.com:15818"
-driver_path = r"D:\2025723\msedgedriver.exe"
+driver_path = r"D:\2025723\edgedriver_win64\msedgedriver.exe"
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
