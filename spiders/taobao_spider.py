@@ -13,12 +13,9 @@ import logging
 # 启用日志（可选）
 logging.basicConfig(level=logging.INFO)
 
-# 代理配置（如不需要代理可以注释相关行）
-username = "t15324050834262"
-password = "6f2j0zgs"
-tunnel = "j197.kdltpspro.com:15818"
-
-# ✅ EdgeDriver 路径（已确认版本正确）
+username = "t15332794831619"
+password = "78wssuy2"
+tunnel = "p385.kdltps.com:15818"
 driver_path = r"D:\2025723\edgedriver_win64\msedgedriver.exe"
 
 # User-Agent 池

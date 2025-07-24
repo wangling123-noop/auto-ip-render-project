@@ -12,9 +12,9 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-username = "t15324050834262"
-password = "6f2j0zgs"
-tunnel = "j197.kdltpspro.com:15818"
+username = "t15332794831619"
+password = "78wssuy2"
+tunnel = "p385.kdltps.com:15818"
 driver_path = r"D:\2025723\edgedriver_win64\msedgedriver.exe"
 
 USER_AGENTS = [

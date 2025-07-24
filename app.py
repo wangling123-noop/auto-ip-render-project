@@ -71,8 +71,8 @@ def process_single_query(data):
 @app.route("/test_proxy")
 def test_proxy():
     proxies = {
-        "http": "http://t15324050834262:6f2j0zgs@j197.kdltpspro.com:15818",
-        "https": "http://t15324050834262:6f2j0zgs@j197.kdltpspro.com:15818"
+        "http": "http://t15332794831619:78wssuy2@p385.kdltps.com:15818",
+        "https": "http://t15332794831619:78wssuy2@p385.kdltps.com:15818"
     }
     try:
         res = requests.get("http://httpbin.org/ip", proxies=proxies, timeout=10)
@@ -89,7 +89,7 @@ def test_proxy():
 
 @app.route("/test_socket")
 def test_socket():
-    host = "j197.kdltpspro.com"
+    host = "p385.kdltps.com"
     port = 15818
     s = socket.socket()
     s.settimeout(5)

@@ -5,12 +5,12 @@ import time
 import random
 
 # 快代理配置
-username = "t15324050834262"
-password = "6f2j0zgs"
+username = "t15332794831619"
+password = "78wssuy2"
 
 # 代理隧道列表，可扩展
 PROXY_TUNNELS = [
-    {"host": "j197.kdltpspro.com", "port": 15818},
+    {"host": "p385.kdltps.com", "port": 15818},
     # {"host": "j198.kdltpspro.com", "port": 15818},  # 如有更多可加
 ]
 

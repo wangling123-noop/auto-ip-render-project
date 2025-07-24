@@ -1,9 +1,9 @@
 import requests
 
 def get_kuaidaili_proxy():
-    username = "t15324050834262"
-    password = "6f2j0zgs"
-    proxy_host = "j197.kdltpspro.com"
+    username = "t15332794831619"
+    password = "78wssuy2"
+    proxy_host = "p385.kdltps.com"
     proxy_port = "15818"
 
     proxy_meta = f"http://{username}:{password}@{proxy_host}:{proxy_port}"
